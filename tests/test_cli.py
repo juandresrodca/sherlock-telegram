@@ -91,6 +91,93 @@ def test_phone_refuses_bulk_input(capsys):
     assert "Refusing" in capsys.readouterr().out
 
 
+class _SelftestHarness:
+    """Drive cmd_selftest against a one-surface manifest with canned results."""
+
+    def __init__(self, monkeypatch, tmp_path, claimed_status, unclaimed_status):
+        import json
+
+        import sherlock_telegram.cli as cli_mod
+        from sherlock_telegram.core.models import Finding
+
+        manifest = tmp_path / "surfaces.json"
+        manifest.write_text(
+            json.dumps(
+                {
+                    "surfaces": [
+                        {
+                            "name": "Fake",
+                            "category": "cross-platform",
+                            "url": "https://fake.test/{}",
+                            "errorType": "status_code",
+                            "usernameClaimed": "real",
+                            "usernameUnclaimed": "notreal",
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        self.manifest = str(manifest)
+
+        async def fake_check(_fetcher, surface, handle):
+            status = claimed_status if handle == "real" else unclaimed_status
+            return Finding(
+                surface=surface.name, category=surface.category, url="", status=status
+            )
+
+        monkeypatch.setattr(cli_mod, "check_surface", fake_check)
+
+
+def test_selftest_fails_on_a_false_positive(monkeypatch, tmp_path, capsys):
+    """FOUND for a handle nobody registered is the worst failure mode."""
+    from sherlock_telegram.core.models import Status
+
+    h = _SelftestHarness(monkeypatch, tmp_path, Status.FOUND, Status.FOUND)
+    assert main(["selftest", "--manifest", h.manifest, "--no-color"]) == 1
+    assert "wrong answer" in capsys.readouterr().out
+
+
+def test_selftest_fails_when_a_real_handle_reads_as_absent(monkeypatch, tmp_path, capsys):
+    from sherlock_telegram.core.models import Status
+
+    h = _SelftestHarness(monkeypatch, tmp_path, Status.NOT_FOUND, Status.NOT_FOUND)
+    assert main(["selftest", "--manifest", h.manifest, "--no-color"]) == 1
+    assert "wrong answer" in capsys.readouterr().out
+
+
+def test_selftest_passes_when_a_surface_is_merely_blocked(monkeypatch, tmp_path, capsys):
+    """A blocked surface made no claim, so it cannot have made a false one.
+
+    Regression: Steam was rate-limited on a CI runner, returned UNKNOWN, and
+    turned the whole build red — the exact unknown-means-no conflation this
+    project exists to avoid.
+    """
+    from sherlock_telegram.core.models import Status
+
+    h = _SelftestHarness(monkeypatch, tmp_path, Status.UNKNOWN, Status.NOT_FOUND)
+    assert main(["selftest", "--manifest", h.manifest, "--no-color"]) == 0
+    out = capsys.readouterr().out
+    assert "no answer" in out
+    assert "did not answer" in out
+
+
+def test_selftest_strict_does_fail_on_no_answer(monkeypatch, tmp_path, capsys):
+    from sherlock_telegram.core.models import Status
+
+    h = _SelftestHarness(monkeypatch, tmp_path, Status.UNKNOWN, Status.NOT_FOUND)
+    assert main(["selftest", "--manifest", h.manifest, "--no-color", "--strict"]) == 1
+    assert "--strict" in capsys.readouterr().out
+
+
+def test_selftest_passes_when_everything_behaves(monkeypatch, tmp_path, capsys):
+    from sherlock_telegram.core.models import Status
+
+    h = _SelftestHarness(monkeypatch, tmp_path, Status.FOUND, Status.NOT_FOUND)
+    assert main(["selftest", "--manifest", h.manifest, "--no-color"]) == 0
+    assert "No surface contradicted" in capsys.readouterr().out
+
+
 def test_error_text_containing_brackets_survives_rich_markup(capsys, monkeypatch):
     """Regression: rich parses [...] as a style tag.
 

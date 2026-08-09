@@ -48,9 +48,10 @@ jobs:
   selftest:
     name: selftest (live surfaces)
     runs-on: ubuntu-latest
-    # Hits third-party sites, so a transient block must not fail the build.
-    # A *consistent* failure means a surface has rotted and should be disabled.
-    continue-on-error: true
+    # No continue-on-error: selftest only fails on a *wrong answer* from a
+    # surface, which is a real manifest defect worth a red build. A surface
+    # that is merely blocked or rate-limited from the runner reports
+    # "no answer" and passes, so third-party hiccups do not cry wolf.
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -171,6 +171,12 @@ def build_parser() -> argparse.ArgumentParser:
     selftest.add_argument("--manifest", metavar="PATH", help="use a custom surfaces.json")
     selftest.add_argument("--site", action="append", help="test only this surface")
     selftest.add_argument("--include-disabled", action="store_true")
+    selftest.add_argument(
+        "--strict",
+        action="store_true",
+        help="also fail when a surface does not answer (blocked/rate-limited), "
+        "not just when it answers wrongly",
+    )
     selftest.add_argument("--no-color", action="store_true")
     _add_network_args(selftest)
 
@@ -424,9 +430,21 @@ def cmd_surfaces(args: argparse.Namespace) -> int:
 async def cmd_selftest(args: argparse.Namespace) -> int:
     """Check each surface against a handle known to exist and one known not to.
 
-    This is the manifest's regression test. A surface that reports FOUND for a
-    handle nobody has registered is worse than a broken one, because it quietly
-    poisons every report.
+    This is the manifest's regression test, and it applies the project's own
+    central distinction to itself: a **wrong answer** and **no answer** are not
+    the same event.
+
+    * A surface that says NOT_FOUND for a handle that exists, or FOUND for one
+      that does not, has a broken rule. That is a real defect — it silently
+      poisons every report — and it fails the run.
+    * A surface that returns UNKNOWN was rate-limited, blocked or unreachable.
+      It never made a claim, so it cannot have made a false one. Treating that
+      as a manifest failure would be exactly the ``unknown``-means-``no``
+      conflation this tool exists to avoid, and in CI it turns every
+      third-party hiccup into a red build.
+
+    Pass ``--strict`` to fail on inconclusive results too, which is what you
+    want when verifying a new surface locally.
     """
     console = console_report.make_console(args.no_color)
     surfaces = filter_surfaces(
@@ -436,6 +454,7 @@ async def cmd_selftest(args: argparse.Namespace) -> int:
     )
     options = _scan_options(args)
     failures = 0
+    inconclusive = 0
 
     async with Fetcher(
         concurrency=options.concurrency,
@@ -455,33 +474,53 @@ async def cmd_selftest(args: argparse.Namespace) -> int:
                 console.print(f"[dim][ ][/dim] {surface.name:<24} no test handles defined")
                 continue
 
-            problems = []
+            wrong: list[str] = []
+            silent: list[str] = []
             for handle, expected in checks:
                 finding = await check_surface(fetcher, surface, handle)
-                if finding.status is not expected:
-                    problems.append(
-                        f"{handle} -> {finding.status.value} (expected {expected.value})"
-                        + (f" ({_esc(finding.error)})" if finding.error else "")
-                    )
+                if finding.status is expected:
+                    continue
+                detail = f"{handle} -> {finding.status.value} (expected {expected.value})" + (
+                    f" ({_esc(finding.error)})" if finding.error else ""
+                )
+                # UNKNOWN/ERROR/SKIPPED are non-answers, not wrong answers.
+                if finding.status in (Status.UNKNOWN, Status.ERROR, Status.SKIPPED):
+                    silent.append(detail)
+                else:
+                    wrong.append(detail)
 
-            if not problems:
-                console.print(f"[green][+][/green] {surface.name:<24} ok")
-            elif surface.enabled:
+            if wrong and surface.enabled:
                 failures += 1
-                console.print(f"[red][!][/red] {surface.name:<24} " + "; ".join(problems))
-            else:
-                # A disabled surface is *documented* as unable to answer, so it
-                # failing here confirms the note rather than breaking the build.
+                console.print(f"[red][!][/red] {surface.name:<24} " + "; ".join(wrong))
+            elif wrong:
+                # A disabled surface is *documented* as unable to answer, so a
+                # wrong answer here confirms the note rather than breaking CI.
                 console.print(
                     f"[yellow][~][/yellow] {surface.name:<24} disabled, as expected: "
-                    + "; ".join(problems)
+                    + "; ".join(wrong)
                 )
+            elif silent:
+                inconclusive += 1
+                console.print(
+                    f"[yellow][?][/yellow] {surface.name:<24} no answer: " + "; ".join(silent)
+                )
+            else:
+                console.print(f"[green][+][/green] {surface.name:<24} ok")
 
     console.print()
     if failures:
-        console.print(f"[red]{failures} enabled surface(s) failed selftest.[/red]")
+        console.print(f"[red]{failures} enabled surface(s) returned a wrong answer.[/red]")
         return 1
-    console.print("[green]All enabled surfaces behaved as declared.[/green]")
+    if inconclusive:
+        console.print(
+            f"[yellow]{inconclusive} surface(s) did not answer[/yellow] "
+            "(blocked or rate-limited, not a manifest defect). "
+            "Repeated failures for the same surface mean it should be disabled."
+        )
+        if args.strict:
+            console.print("[red]--strict: treating inconclusive as failure.[/red]")
+            return 1
+    console.print("[green]No surface contradicted its declared behaviour.[/green]")
     return 0
 
 
