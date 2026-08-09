@@ -184,23 +184,10 @@ Adding a site is a JSON edit, not a code change — that is Sherlock's best idea
   "usernameClaimed": "someone_real",     // slt selftest asserts FOUND
   "usernameUnclaimed": "zzq9x7v2knotreal4421"  // ...and NOT_FOUND
 }
-```
 
-Then prove it works:
 
-```bash
-slt selftest --site Example
-```
 
-A surface that reports FOUND for a handle nobody registered is worse than a broken one — it quietly poisons every report. `selftest` is what stops that, and CI runs it. Full field reference in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 ---
 
-## Prior art
-
-- **[Sherlock](https://github.com/sherlock-project/sherlock)** — the manifest-driven, `errorType`-based methodology this project ports to Telegram.
-- **[whatsapp-scrapping-tool](https://github.com/eduair94/whatsapp-scrapping-tool)** — the messenger-recon project that prompted this one. Its bulk-verification model is intentionally *not* reproduced; see the omission above.
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+⭐ Star this repo if you find it useful!
