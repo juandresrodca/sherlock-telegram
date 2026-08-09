@@ -1,0 +1,220 @@
+{
+  "version": 1,
+  "note": "Every enabled entry below was verified live with `slt selftest`. See CONTRIBUTING.md for the field reference. Disabled entries document *why* they are off — that is deliberate: a surface that cannot answer honestly is worth recording, not deleting.",
+  "surfaces": [
+    {
+      "name": "Lyzem",
+      "category": "telegram-directory",
+      "url": "https://lyzem.com/search?q=%40{}&type=channels",
+      "errorType": "regex",
+      "regexFound": "tgme_page|t\\.me/{}",
+      "confidence": "low",
+      "enabled": false,
+      "tags": ["telegram", "search-engine"],
+      "note": "Third-party Telegram search engine. Disabled: the results page is byte-for-byte structurally identical for hits and misses (both titled 'Search results'), so there is no honest detection rule to write.",
+      "usernameClaimed": "durov",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    },
+    {
+      "name": "TGStat",
+      "category": "telegram-directory",
+      "url": "https://tgstat.ru/en/channel/@{}",
+      "errorType": "status_code",
+      "errorCode": [404],
+      "confidence": "medium",
+      "enabled": false,
+      "tags": ["telegram", "analytics"],
+      "note": "Rich channel analytics, but returns HTTP 403 to datacenter IPs. Enable with --include-disabled behind a residential proxy.",
+      "usernameClaimed": "durov"
+    },
+    {
+      "name": "Telemetr",
+      "category": "telegram-directory",
+      "url": "https://telemetr.me/{}",
+      "errorType": "status_code",
+      "errorCode": [404],
+      "confidence": "low",
+      "enabled": false,
+      "tags": ["telegram", "analytics"],
+      "note": "Requires an account; unauthenticated requests 404 regardless of whether the channel exists.",
+      "usernameClaimed": "durov"
+    },
+    {
+      "name": "GitHub",
+      "category": "cross-platform",
+      "url": "https://github.com/{}",
+      "errorType": "status_code",
+      "errorCode": [404],
+      "confidence": "high",
+      "tags": ["dev", "handle-reuse"],
+      "extract": {
+        "title": "<meta property=\"og:title\" content=\"([^\"]+)\"",
+        "description": "<meta property=\"og:description\" content=\"([^\"]*)\""
+      },
+      "usernameClaimed": "torvalds",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    },
+    {
+      "name": "GitLab",
+      "category": "cross-platform",
+      "url": "https://gitlab.com/{}",
+      "urlProbe": "https://gitlab.com/api/v4/users?username={}",
+      "errorType": "message",
+      "errorMsg": ["[]"],
+      "confidence": "high",
+      "tags": ["dev", "handle-reuse"],
+      "note": "Uses the public users API, which returns an empty JSON array for an unknown handle — a clean signal instead of an HTML app shell.",
+      "extract": {
+        "title": "\"name\":\"([^\"]+)\"",
+        "public_email": "\"public_email\":\"([^\"]+)\""
+      },
+      "usernameClaimed": "dzaporozhets",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    },
+    {
+      "name": "Keybase",
+      "category": "cross-platform",
+      "url": "https://keybase.io/{}",
+      "urlProbe": "https://keybase.io/_/api/1.0/user/lookup.json?username={}",
+      "errorType": "message",
+      "errorMsg": ["\"name\":\"NOT_FOUND\"", "\"name\":\"INPUT_ERROR\""],
+      "confidence": "high",
+      "tags": ["identity", "crypto", "handle-reuse"],
+      "note": "The highest-value pivot in this list: Keybase profiles cryptographically self-attest links to other platforms. Handles are capped at 16 characters, so longer Telegram handles cannot exist here.",
+      "usernameRegex": "^[A-Za-z][A-Za-z0-9_]{1,15}$",
+      "extract": {
+        "title": "\"full_name\":\"([^\"]*)\""
+      },
+      "usernameClaimed": "chris",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    },
+    {
+      "name": "PyPI",
+      "category": "cross-platform",
+      "url": "https://pypi.org/user/{}/",
+      "errorType": "regex",
+      "regexFound": "author-profile",
+      "confidence": "medium",
+      "tags": ["dev", "handle-reuse"],
+      "note": "Detected by a positive marker on the profile page. PyPI serves a Cloudflare 'Client Challenge' (HTTP 200) for unknown users, so a status-code rule would read every miss as a hit.",
+      "usernameClaimed": "dstufft",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    },
+    {
+      "name": "npm",
+      "category": "cross-platform",
+      "url": "https://www.npmjs.com/~{}",
+      "urlProbe": "https://registry.npmjs.org/-/v1/search?text=maintainer:{}&size=1",
+      "errorType": "message",
+      "errorMsg": ["\"total\":0"],
+      "confidence": "medium",
+      "tags": ["dev", "handle-reuse"],
+      "note": "Uses the registry search API keyed on maintainer. The older /-/user/org.couchdb.user: endpoint now returns 401 to unauthenticated clients and cannot be used.",
+      "usernameClaimed": "sindresorhus",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    },
+    {
+      "name": "Gravatar",
+      "category": "cross-platform",
+      "url": "https://gravatar.com/{}",
+      "urlProbe": "https://gravatar.com/{}.json",
+      "errorType": "status_code",
+      "errorCode": [404],
+      "confidence": "medium",
+      "tags": ["identity", "handle-reuse"],
+      "note": "Returns a JSON profile that often carries a display name and verified account links.",
+      "usernameClaimed": "mattm",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    },
+    {
+      "name": "Steam",
+      "category": "cross-platform",
+      "url": "https://steamcommunity.com/id/{}",
+      "errorType": "message",
+      "errorMsg": ["The specified profile could not be found"],
+      "confidence": "medium",
+      "tags": ["gaming", "handle-reuse"],
+      "usernameClaimed": "gaben",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    },
+    {
+      "name": "Twitch",
+      "category": "cross-platform",
+      "url": "https://www.twitch.tv/{}",
+      "urlProbe": "https://m.twitch.tv/{}",
+      "errorType": "message",
+      "errorMsg": ["content-unavailable", "Sorry. Unless you've got a time machine"],
+      "confidence": "low",
+      "enabled": false,
+      "tags": ["streaming", "handle-reuse"],
+      "note": "Disabled: the mobile shell renders its not-found state in JavaScript, so the sentinel is present or absent depending on how much of the app shell ships. It reported a hit for an unregistered handle during selftest, which is the worst possible failure mode.",
+      "usernameClaimed": "ninja",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    },
+    {
+      "name": "VK",
+      "category": "cross-platform",
+      "url": "https://vk.com/{}",
+      "errorType": "status_code",
+      "errorCode": [404],
+      "confidence": "medium",
+      "tags": ["social", "handle-reuse", "ru"],
+      "note": "High-value pivot: VK overlaps heavily with Telegram's Russian-speaking userbase. Unknown handles return a genuine 404, so the status-code rule holds even from datacenter IPs.",
+      "usernameClaimed": "durov",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    },
+    {
+      "name": "Hacker News",
+      "category": "cross-platform",
+      "url": "https://news.ycombinator.com/user?id={}",
+      "errorType": "message",
+      "errorMsg": ["No such user."],
+      "confidence": "high",
+      "enabled": false,
+      "tags": ["forum", "handle-reuse"],
+      "note": "The rule is correct and works from a residential IP, but HN returns HTTP 429 ('Sorry.') to datacenter ranges. Disabled by default so it cannot silently produce inconclusive noise.",
+      "usernameClaimed": "pg",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    },
+    {
+      "name": "Reddit",
+      "category": "cross-platform",
+      "url": "https://www.reddit.com/user/{}",
+      "urlProbe": "https://www.reddit.com/user/{}/about.json",
+      "errorType": "status_code",
+      "errorCode": [404],
+      "confidence": "medium",
+      "enabled": false,
+      "tags": ["forum", "handle-reuse"],
+      "note": "Reddit serves an HTML block page (HTTP 403) to datacenter IPs for every handle. Disabled: it cannot distinguish hit from miss without residential egress or an API token.",
+      "usernameClaimed": "spez",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    },
+    {
+      "name": "Medium",
+      "category": "cross-platform",
+      "url": "https://medium.com/@{}",
+      "errorType": "status_code",
+      "errorCode": [404],
+      "confidence": "low",
+      "enabled": false,
+      "tags": ["blog", "handle-reuse"],
+      "note": "Cloudflare returns HTTP 403 for every handle from datacenter IPs, hit or miss.",
+      "usernameClaimed": "dhh",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    },
+    {
+      "name": "YouTube",
+      "category": "cross-platform",
+      "url": "https://www.youtube.com/@{}",
+      "errorType": "message",
+      "errorMsg": ["This page isn't available", "404 Not Found"],
+      "confidence": "low",
+      "enabled": false,
+      "tags": ["video", "handle-reuse"],
+      "note": "Requests from the EU are redirected to consent.youtube.com before the channel renders, so neither the sentinel nor the profile markup is ever reached.",
+      "usernameClaimed": "google",
+      "usernameUnclaimed": "zzq9x7v2knot44"
+    }
+  ]
+}

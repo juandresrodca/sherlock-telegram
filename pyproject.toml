@@ -1,0 +1,75 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sherlock-telegram"
+version = "0.1.0"
+description = "Sherlock-style OSINT reconnaissance for Telegram identities: usernames, channels, bots and their public footprint."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "Sherlock Telegram contributors" }]
+keywords = [
+    "osint",
+    "telegram",
+    "sherlock",
+    "username-enumeration",
+    "reconnaissance",
+    "threat-intelligence",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Typing :: Typed",
+]
+dependencies = [
+    "httpx[http2]>=0.26",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+mtproto = ["telethon>=1.34"]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+]
+
+[project.urls]
+Homepage = "https://github.com/juandresrodca/sherlock-telegram"
+Repository = "https://github.com/juandresrodca/sherlock-telegram"
+Issues = "https://github.com/juandresrodca/sherlock-telegram/issues"
+Changelog = "https://github.com/juandresrodca/sherlock-telegram/blob/main/CHANGELOG.md"
+
+[project.scripts]
+sherlock-telegram = "sherlock_telegram.cli:main"
+slt = "sherlock_telegram.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["sherlock_telegram"]
+
+[tool.hatch.build.targets.sdist]
+include = ["sherlock_telegram", "tests", "README.md", "LICENSE", "CHANGELOG.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = ["error::DeprecationWarning:sherlock_telegram.*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = ["E501"]
