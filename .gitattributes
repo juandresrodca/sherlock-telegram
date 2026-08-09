@@ -1,0 +1,5 @@
+* text=auto eol=lf
+
+# Fixtures are captured verbatim from live sites — normalising their line
+# endings would change the bytes the parsers are tested against.
+tests/fixtures/** -text

@@ -32,7 +32,7 @@ Initial release.
 - **Opt-in MTProto phone lookup**, capped at 10 numbers per run, with no file
   input, batch mode or resume state. See [ETHICS.md](ETHICS.md).
 - Exporters for JSON, CSV, Markdown and HTML, all sharing one schema.
-- 124 offline, fixture-driven tests.
+- 125 offline, fixture-driven tests.
 
 ### Notes on the shipped manifest
 
