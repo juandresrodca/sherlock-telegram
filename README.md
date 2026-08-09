@@ -165,7 +165,8 @@ Everything above is **passive**: public pages, no account, no authentication, no
 
 That cap is the design, not a missing feature. Looking up the numbers already tied to one investigation is research. Feeding a list through it to discover which strangers have Telegram is bulk enumeration of people who never opted in — so this tool does not do it, and `--yes` will not make it.
 
-Read **[ETHICS.md](ETHICS.md)** before you scan anyone but yourself.
+> ⚠️ **Warning:** Make sure.
+Read **[ETHICS.md](ETHICS.md)**  before you scan anyone but yourself.
 
 ---
 
