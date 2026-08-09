@@ -169,27 +169,11 @@ Read **[ETHICS.md](ETHICS.md)** before you scan anyone but yourself.
 
 ---
 
-## Adding a surface
-
-Adding a site is a JSON edit, not a code change — that is Sherlock's best idea and it is kept intact. Append to [`sherlock_telegram/resources/surfaces.json`](sherlock_telegram/resources/surfaces.json):
-
-```jsonc
-{
-  "name": "Example",
-  "category": "cross-platform",
-  "url": "https://example.com/{}",
-  "errorType": "message",          // status_code | message | response_url | regex
-  "errorMsg": ["User not found"],
-  "confidence": "high",
-  "usernameClaimed": "someone_real",     // slt selftest asserts FOUND
-  "usernameUnclaimed": "zzq9x7v2knotreal4421"  // ...and NOT_FOUND
-}
-
-
-
-
----
----
-
+## 
 
 ⭐ Star this repo if you find it useful!
+
+
+
+
+
