@@ -1,6 +1,6 @@
 # Sherlock Telegram
 
-**Sherlock's methodology, aimed at Telegram.** Give it a handle and it tells you what that handle *is* — person, bot, channel or group — what it looks like from the outside, where else the name appears, and which neighbouring handles are worth pulling next.
+**Sherlock's methodology, aimed at Telegram.** Give it a handle and it tells you what that handle *is*  person, bot, channel or group what it looks like from the outside, where else the name appears, and which neighbouring handles are worth pulling next.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)](pyproject.toml)
@@ -54,7 +54,7 @@ This is the single fact the whole project is built around:
 | `durov` | **200** | yes | claimed |
 | `zzq9x7v2knotreal4421` | **200** | no | free |
 
-A status-code check reports *both* as found. Sherlock's `errorType: "message"` strategy — look for a sentinel in the body, not at the response line — is the correct tool, and it is what `t.me` demands. Every detection rule here is declared explicitly in a manifest so you can audit it, and `slt selftest` re-verifies each rule against a handle known to exist and one known not to.
+A status-code check reports *both* as found. Sherlock's `errorType: "message"` strategy  look for a sentinel in the body, not at the response line, is the correct tool, and it is what `t.me` demands. Every detection rule here is declared explicitly in a manifest so you can audit it, and `slt selftest` re-verifies each rule against a handle known to exist and one known not to.
 
 ---
 
